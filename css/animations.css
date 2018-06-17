@@ -1,0 +1,9 @@
+.hidden-anim {
+    opacity: 0;
+}
+
+.visible {
+    opacity: 1;
+    animation-duration: 1s;
+}
+
