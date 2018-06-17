@@ -1,0 +1,6 @@
+@font-face {
+    font-family: ''; /* Гарнитура шрифта */
+    src: url(../fonts/); /* Путь к файлу со шрифтом */
+    font-style: normal;
+	font-weight: normal;
+   }
