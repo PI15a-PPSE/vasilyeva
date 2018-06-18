@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article version="5.1" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xila="http://www.w3.org/2001/XInclude/local-attributes"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:trans="http://docbook.org/ns/transclusion"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook">
+  <info>
+    <title>Программный Продукт "Змейка"</title>
+
+    <author>
+      <personname><firstname>Вероника</firstname><surname>Васильева</surname></personname>
+
+      <affiliation>
+        <orgname>Донецкий Национальный Технический Университет</orgname>
+      </affiliation>
+    </author>
+
+    <pubdate>18-06-2018</pubdate>
+  </info>
+
+  <section>
+    <title>Описание продукта</title>
+
+    <para>Программный продукт <emphasis role="bold">Змейка </emphasis>был
+    разработан в виде игры для развлечения. Игра содержит в себе поле и предназначена
+    для одного игрока.</para>
+  </section>
+
+  <section>
+    <title>Первый запуск</title>
+
+    <para>При первом запуске игры пользователю предоставлено поле, игрок может перемещаться в четыре стороны и поле замыкается со всех сторон. Код обработки клетки:</para>
+
+    <programlisting>(function(){ 'use strict';
+
+  g.SnakeTile = function( opt ) {
+    this.parentState = opt.parentState;
+    this.parentGroup = opt.parentGroup;
+    this.col = opt.col;
+    this.row = opt.row;
+    this.x = opt.x;
+    this.y = opt.y;
+    this.w = opt.w;
+    this.h = opt.h;
+    this.color = null;
+    this.scale = 1;
+    this.rotation = 0;
+    this.blur = 0;
+    this.alpha = 1;
+    this.borderRadius = 0;
+    this.borderRadiusAmount = 0;
+    this.elem = document.createElement( 'div' );
+    this.elem.style.position = 'absolute';
+    this.parentState.stageElem.appendChild( this.elem );
+  };
+
+  g.SnakeTile.prototype.update = function( i ) {
+    this.x = this.col * this.parentState.tileWidth;
+    this.y = this.row * this.parentState.tileHeight;
+    if( i == 0 ) {
+      this.color = '#fff';
+      this.blur = this.parentState.dimAvg * 0.03 + Math.sin( this.parentState.time.elapsed / 200 ) * this.parentState.dimAvg * 0.015;
+      if( this.parentState.snake.dir == 'n' ) {
+        this.borderRadius = this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0 0';
+      } else if( this.parentState.snake.dir == 's' ) {
+        this.borderRadius = '0 0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '%';
+      } else if( this.parentState.snake.dir == 'e' ) {
+        this.borderRadius = '0 ' + this.borderRadiusAmount + '% ' + this.borderRadiusAmount + '% 0';
+      } else if( this.parentState.snake.dir == 'w' ) {
+        this.borderRadius = this.borderRadiusAmount + '% 0 0 ' + this.borderRadiusAmount + '%';
+      }
+    } else {
+      this.color = '#fff';
+      this.blur = 0;
+      this.borderRadius = '0';
+    }
+    this.alpha = 1 - ( i / this.parentState.snake.tiles.length ) * 0.6;
+    this.rotation = ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 90;
+    this.scale = 1 + ( this.parentState.snake.justAteTick / this.parentState.snake.justAteTickMax ) * 1;
+  };
+
+  g.SnakeTile.prototype.updateDimensions = function() {
+    this.w = this.parentState.tileWidth - this.parentState.spacing;
+    this.h = this.parentState.tileHeight - this.parentState.spacing;
+  };
+
+  g.SnakeTile.prototype.render = function( i ) {
+    this.elem.style.left = this.x + 'px';
+    this.elem.style.top = this.y + 'px';
+    this.elem.style.width = this.w + 'px';
+    this.elem.style.height = this.h + 'px';
+    this.elem.style.backgroundColor = 'rgba(255, 255, 255, ' + this.alpha + ')';
+    this.elem.style.boxShadow = '0 0 ' + this.blur + 'px #fff';
+    this.elem.style.borderRadius = this.borderRadius;
+  };
+
+})();</programlisting>
+
+    <para>При нажатии на кнопку змейка будет двигаться в другую сторону:</para>
+
+    <programlisting>  g.Snake.prototype.update = function() {
+    if( this.parentState.keys.up ) {
+      if( this.dir != 's' && this.dir != 'n' && this.currDir != 's' && this.currDir != 'n' ) {
+        this.dir = 'n';
+      }
+    } else if( this.parentState.keys.down) {
+      if( this.dir != 'n' && this.dir != 's' && this.currDir != 'n' && this.currDir != 's' ) {
+        this.dir = 's';
+      }
+    } else if( this.parentState.keys.right ) {
+      if( this.dir != 'w' && this.dir != 'e' && this.currDir != 'w' && this.currDir != 'e' ) {
+        this.dir = 'e';
+      }
+    } else if( this.parentState.keys.left ) {
+      if( this.dir != 'e' && this.dir != 'w' && this.currDir != 'e' && this.currDir != 'w' ) {
+        this.dir = 'w';
+      }
+    }</programlisting>
+
+    <para>При подборе еды змейка увеличивается:</para>
+
+    <programlisting> if( this.parentState.grid.get( this.tiles[ 0 ].col, this.tiles[ 0 ].row ) == 'food' ) {
+        this.tiles.push( new g.SnakeTile({
+          parentState: this.parentState,
+          parentGroup: this.tiles,
+          col: this.last.col,
+          row: this.last.row,
+          x: this.last.col * this.parentState.tileWidth,
+          y: this.last.row * this.parentState.tileHeight,
+          w: this.parentState.tileWidth - this.parentState.spacing,
+          h: this.parentState.tileHeight - this.parentState.spacing
+        }));
+        if( this.updateTickMax - this.updateTickChange > this.updateTickLimit ) {
+          this.updateTickMax -= this.updateTickChange;
+        }
+        this.parentState.score++;
+        this.parentState.scoreElem.innerHTML = this.parentState.score;
+        this.justAteTick = this.justAteTickMax;
+
+        this.parentState.food.eaten = 1;
+        this.parentState.stageElem.removeChild( this.parentState.food.tile.elem );
+
+        var _this = this;
+        
+        this.foodCreateTimeout = setTimeout( function() {
+          _this.parentState.food = new g.Food({
+            parentState: _this.parentState
+          });
+        }, 300);
+      }</programlisting>
+
+    <para>Таким образом, было рассмотрено 3 варианта развития событий, с
+    приведенным кодом.</para>
+  </section>
+</article>
